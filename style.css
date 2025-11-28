@@ -11,6 +11,11 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
+/* page padding so content never hugs the viewport edge */
+body {
+  padding: 0 1.5rem;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -34,9 +39,12 @@ nav,
 }
 
 nav {
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
   height: 17vh;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
 .nav-links {
@@ -149,9 +157,10 @@ a:hover {
 /* SECTIONS */
 
 section {
-  padding-top: 4vh;
+  padding: 4vh 1.5rem;
   height: 96vh;
-  margin: 0 10rem;
+  margin: 0 auto;
+  max-width: 1100px;
   box-sizing: border-box;
   min-height: fit-content;
 }
@@ -164,21 +173,24 @@ section {
 
 #profile {
   display: flex;
-  justify-content: center;
-  gap: 5rem;
-  height: 80vh;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  height: auto;
+  min-height: 30vh;
+  align-items: center;
 }
 
 .section__pic-container {
   display: flex;
-  height: 400px;
-  width: 400px;
+  height: 140px;
+  width: 140px;
   margin: auto 0;
 }
 
 .section__text {
   align-self: center;
-  text-align: center;
+  text-align: left;
+  max-width: 48ch;
 }
 
 .section__text p {
@@ -190,13 +202,13 @@ section {
 }
 
 .section__text__p2 {
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .title {
-  font-size: 3rem;
-  text-align: center;
+  font-size: 1.8rem;
+  text-align: left;
 }
 
 #socials-container {
@@ -261,10 +273,92 @@ section {
   gap: 1rem;
 }
 
+/* Profile-specific button styles (improved look) */
+#profile .btn {
+  width: auto;
+  min-width: 9rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 10px rgba(15, 15, 15, 0.06);
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  margin-bottom: 0.5rem;
+}
+
+#profile .btn-color-1 {
+  background: #0f1720;
+  color: #ffffff;
+  border: none;
+}
+
+#profile .btn-color-1:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 17, 20, 0.12);
+}
+
+#profile .btn-color-2 {
+  background: transparent;
+  color: #0f1720;
+  border: 1px solid rgba(15, 17, 20, 0.12);
+}
+
+#profile .btn-color-2:hover {
+  background: rgba(15, 17, 20, 0.04);
+  transform: translateY(-3px);
+}
+
+/* Make profile buttons stack / grow on very small screens */
+@media screen and (max-width: 600px) {
+  #profile .btn {
+    width: 90%;
+    max-width: 360px;
+    padding: 0.75rem 1rem;
+  }
+  #profile .btn-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
 /* ABOUT SECTION */
 
 #about {
   position: relative;
+}
+
+/* Reduce space between the About title and its content */
+#about {
+  padding-top: 2vh;
+}
+
+#about .title {
+  margin-bottom: 0.5rem;
+}
+
+/* Make the About section and its details shrink-to-fit content */
+#about {
+  height: auto;
+}
+
+#about .section-container {
+  height: auto;
+  align-items: flex-start;
+}
+
+.about-details-container {
+  /* don't stretch to fill parent; size to content */
+  flex: 0 1 auto;
+  align-items: flex-start;
+}
+
+/* If individual detail boxes shouldn't expand, constrain their flex behavior inside #about */
+#about .details-container {
+  flex: 0 0 auto;
 }
 
 .about-containers {
@@ -309,9 +403,20 @@ section {
 }
 
 .section__pic-container {
-  height: 400px;
-  width: 400px;
+  height: 140px;
+  width: 140px;
   margin: auto 0;
+}
+
+/* Profile-specific overrides for left alignment */
+#profile .btn-container {
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+
+#profile #socials-container {
+  justify-content: flex-start;
+  margin-top: 0.25rem;
 }
 
 /* EXPERIENCE SECTION */
@@ -424,7 +529,9 @@ article .icon {
 
 footer {
   height: 26vh;
-  margin: 0 1rem;
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: 0 1.5rem;
 }
 
 footer p {
