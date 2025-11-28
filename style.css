@@ -438,6 +438,153 @@ section {
   flex-direction: column;
 }
 
+/* Resume entry styles (reusable) */
+.resume-entry {
+  background: #ffffff;
+  border: 1px solid rgba(15,15,15,0.06);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 0 0 1.25rem 0;
+  box-shadow: 0 6px 18px rgba(15,15,15,0.03);
+  width: 100%;
+}
+
+.resume-entry .entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.resume-entry .entry-company h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.resume-entry .entry-role {
+  margin: 0.25rem 0 0 0;
+  color: rgb(85,85,85);
+  font-size: 0.95rem;
+}
+
+/* Logo + company text layout */
+.entry-company {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.entry-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex: 0 0 44px;
+}
+
+.entry-text {
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (max-width: 700px) {
+  .entry-logo {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+  }
+}
+
+.resume-entry .entry-meta {
+  text-align: right;
+  min-width: 120px;
+  color: rgb(120,120,120);
+  font-size: 0.9rem;
+}
+
+.resume-entry .entry-dates {
+  font-weight: 600;
+  color: rgb(80,80,80);
+}
+
+.resume-entry .entry-bullets {
+  margin: 0.75rem 0 0 1rem;
+  padding-left: 1.1rem;
+  color: rgb(70,70,70);
+}
+
+.resume-entry .entry-bullets li {
+  margin-bottom: 0.6rem;
+  line-height: 1.45;
+  font-size: 0.95rem;
+}
+
+/* Emphasize bullet titles and make descriptions slightly smaller */
+.entry-bullets .bullet-title {
+  font-weight: 800;
+  display: block;
+  color: #0f1720;
+  margin-bottom: 0.15rem;
+}
+
+.entry-bullets .bullet-desc {
+  font-size: 0.85rem;
+  color: rgb(95,95,95);
+  margin: 0;
+}
+
+/* Responsive: stack header on small screens and left-align meta */
+@media screen and (max-width: 700px) {
+  .resume-entry .entry-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .resume-entry .entry-meta {
+    text-align: left;
+    margin-top: 0.5rem;
+    min-width: auto;
+  }
+}
+
+/* Tech stack tags (pill badges) */
+.entry-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.tag {
+  display: inline-block;
+  background: rgba(15,17,20,0.06);
+  color: #0f1720;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  border: 1px solid rgba(15,17,20,0.04);
+}
+
+.tag:hover {
+  background: rgba(15,17,20,0.09);
+  transform: translateY(-2px);
+}
+
+@media screen and (max-width: 700px) {
+  .entry-tags {
+    gap: 0.4rem;
+  }
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.22rem 0.5rem;
+  }
+}
+
+/* Ensure resume entries stack vertically in Experience */
+#experience .about-containers {
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .article-container {
   display: flex;
   text-align: initial;
