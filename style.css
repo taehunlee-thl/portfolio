@@ -529,6 +529,42 @@ section {
   color: rgb(80,80,80);
 }
 
+/* Show a small location icon before the location text */
+.entry-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.entry-location::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('./assets/hk-logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Show a small location icon before the location text */
+.entry-location-kr {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.entry-location-kr::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('./assets/kr-logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 .resume-entry .entry-bullets {
   margin: 0.75rem 0 0 1rem;
   padding-left: 1.1rem;
@@ -639,8 +675,40 @@ section {
 
 /* Ensure resume entries stack vertically in Experience */
 #experience .about-containers {
+  display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Education uses two-column layout to fill available width */
+#education .about-containers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+#education .about-containers .resume-entry {
+  flex: 1 1 calc(50% - 0.5rem);
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 900px) {
+  #education .about-containers .resume-entry {
+    flex: 1 1 100%;
+  }
+}
+
+/* Ensure the education container stretches full width instead of being centered */
+#education .experience-details-container {
+  align-items: stretch;
+}
+
+#education .about-containers {
+  width: 100%;
+}
+
+#education .about-containers .resume-entry {
+  margin: 0; /* remove extra margins so two columns align evenly */
 }
 
 .article-container {
