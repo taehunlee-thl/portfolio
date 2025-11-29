@@ -565,6 +565,24 @@ section {
   background-position: center;
 }
 
+.entry-location-pl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.entry-location-pl::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('./assets/poland-logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
 .resume-entry .entry-bullets {
   margin: 0.75rem 0 0 1rem;
   padding-left: 1.1rem;
@@ -675,40 +693,29 @@ section {
 
 /* Ensure resume entries stack vertically in Experience */
 #experience .about-containers {
-  display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/* Education uses two-column layout to fill available width */
+/* Make Education section match Experience layout */
+#education {
+  position: relative;
+  /* let Education size itself to its content instead of forcing a tall section */
+  height: auto;
+  min-height: 0;
+  padding-bottom: 2vh; /* small breathing room */
+}
+
+#education .experience-details-container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
 #education .about-containers {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 1rem;
-}
-
-#education .about-containers .resume-entry {
-  flex: 1 1 calc(50% - 0.5rem);
-  box-sizing: border-box;
-}
-
-@media screen and (max-width: 900px) {
-  #education .about-containers .resume-entry {
-    flex: 1 1 100%;
-  }
-}
-
-/* Ensure the education container stretches full width instead of being centered */
-#education .experience-details-container {
-  align-items: stretch;
-}
-
-#education .about-containers {
-  width: 100%;
-}
-
-#education .about-containers .resume-entry {
-  margin: 0; /* remove extra margins so two columns align evenly */
 }
 
 .article-container {

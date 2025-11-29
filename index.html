@@ -15,8 +15,8 @@
         <ul class="nav-links">
           <li><a href="#about">About</a></li>
           <li><a href="#experience">Experience</a></li>
+          <li><a href="#education">Education</a></li>
           <li><a href="#projects">Projects</a></li>
-          <li><a href="#contact">Contact</a></li>
         </ul>
       </div>
     </nav>
@@ -31,8 +31,8 @@
         <div class="menu-links">
           <li><a href="#about" onclick="toggleMenu()">About</a></li>
           <li><a href="#experience" onclick="toggleMenu()">Experience</a></li>
+          <li><a href="#education" onclick="toggleMenu()">Education</a></li>
           <li><a href="#projects" onclick="toggleMenu()">Projects</a></li>
-          <li><a href="#contact" onclick="toggleMenu()">Contact</a></li>
         </div>
       </div>
     </nav>
@@ -49,9 +49,6 @@
             onclick="window.open('./assets/resume-example.pdf')"
           >
             View Resume
-          </button>
-          <button class="btn btn-color-1" onclick="location.href='./#contact'">
-            Contact Info
           </button>
         </div>
         <div id="socials-container">
@@ -327,6 +324,59 @@
         src="./assets/arrow.png"
         alt="Arrow icon"
         class="icon arrow"
+        onclick="location.href='./#education'"
+      />
+    </section>
+    </section>
+    <section id="education">
+      <h1 class="title">Education</h1>
+      <div class="experience-details-container">
+        <div class="about-containers">
+          <div class="resume-entry">
+            <div class="entry-header">
+              <div class="entry-company">
+                <img src="./assets/cuhk-logo.png" alt="University logo" class="entry-logo" />
+                <div class="entry-text">
+                  <h3>The Chinese University of Hong Kong</h3>
+                  <p class="entry-role">Major in Mechanical and Automation Engineering (BEng First Class Honours)</p>
+                  <p class="entry-role">Minor in Computer Science</p>
+                </div>
+              </div>
+              <div class="entry-meta">
+                <div class="entry-location">Hong Kong</div>
+                <div class="entry-dates">Aug 2018 &ndash; Dec 2023</div>
+              </div>
+            </div>
+            <ul class="entry-bullets">
+              <li>Dean's List</li>
+              <li>Convocation Outstanding Services and Creativity Student Award</li>
+              <li>Industrial Scholarship</li>
+              <li>Outstanding Student Award: Innovation and Invention</li>
+              <li>MIT Virtual HealthHack Winner</li>
+            </ul>
+          </div>
+
+          <div class="resume-entry">
+            <div class="entry-header">
+              <div class="entry-company">
+                <img src="./assets/bisc.png" alt="High school logo" class="entry-logo" />
+                <div class="entry-text">
+                  <h3>British International School of Cracow</h3>
+                  <p class="entry-role">International Baccalaureate Bilingual Diploma</p>
+                </div>
+              </div>
+              <div class="entry-meta">
+                <div class="entry-location-pl">Poland</div>
+                <div class="entry-dates">Sep 2013 &ndash; Jun 2018</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+            <img
+        src="./assets/arrow.png"
+        alt="Arrow icon"
+        class="icon arrow"
         onclick="location.href='./#projects'"
       />
     </section>
@@ -408,34 +458,6 @@
           </div>
         </div>
       </div>
-      <img
-        src="./assets/arrow.png"
-        alt="Arrow icon"
-        class="icon arrow"
-        onclick="location.href='./#contact'"
-      />
-    </section>
-    <section id="contact">
-      <p class="section__text__p1">Get in Touch</p>
-      <h1 class="title">Contact Me</h1>
-      <div class="contact-info-upper-container">
-        <div class="contact-info-container">
-          <img
-            src="./assets/email.png"
-            alt="Email icon"
-            class="icon contact-icon email-icon"
-          />
-          <p><a href="mailto:taehunlee.thl@gmail.com">taehunlee.thl@gmail.com</a></p>
-        </div>
-        <div class="contact-info-container">
-          <img
-            src="./assets/linkedin.png"
-            alt="LinkedIn icon"
-            class="icon contact-icon"
-          />
-          <p><a href="https://www.linkedin.com/in/taehunlee-thl/">LinkedIn</a></p>
-        </div>
-      </div>
     </section>
     <footer>
       <nav>
@@ -443,8 +465,8 @@
           <ul class="nav-links">
             <li><a href="#about">About</a></li>
             <li><a href="#experience">Experience</a></li>
+            <li><a href="#education">Education</a></li>
             <li><a href="#projects">Projects</a></li>
-            <li><a href="#contact">Contact</a></li>
           </ul>
         </div>
       </nav>
