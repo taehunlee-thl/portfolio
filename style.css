@@ -750,6 +750,14 @@ article .icon {
   position: relative;
 }
 
+#projects .title {
+  margin-left: 2rem;
+}
+
+#projects .experience-details-container {
+  margin-left: 2rem;
+}
+
 .color-container {
   border-color: rgb(163, 163, 163);
   background: rgb(250, 250, 250);
