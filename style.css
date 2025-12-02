@@ -771,6 +771,66 @@ article .icon {
   border-color: rgb(163, 163, 163);
 }
 
+/* Project-specific bullet styling */
+#projects .entry-bullets {
+  margin: 0.75rem 0;
+  padding: 0 1rem;
+  list-style-position: inside;
+  text-align: left;
+}
+
+#projects .entry-bullets li {
+  text-align: left;
+  padding: 0.5rem 0;
+}
+
+/* Project-specific tags padding */
+#projects .entry-tags {
+  padding-left: 0.5rem;
+}
+
+/* Project meta container with tags and links */
+.project-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.project-links {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding-right: 1rem;
+  margin-left: auto;
+}
+
+.project-link-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+  transition: transform 180ms ease, opacity 180ms ease;
+  opacity: 0.7;
+}
+
+.project-link-icon:hover {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+@media screen and (max-width: 600px) {
+  .project-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .project-links {
+    padding-left: 1rem;
+  }
+}
+
 /* Horizontal scrollable container for projects - no overflow wrapping */
 #projects .about-containers {
   display: flex;
