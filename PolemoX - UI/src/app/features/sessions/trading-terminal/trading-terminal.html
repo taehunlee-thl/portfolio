@@ -1,0 +1,155 @@
+<div class="space-y-4">
+  <div class="relative rounded-lg border border-line bg-panel p-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-baseline gap-3">
+        <span class="font-display text-xl text-fg">{{ symbol() }}</span>
+        @if (currentPrice(); as price) {
+          <span class="num text-lg text-fg">{{ price | money }}</span>
+        }
+      </div>
+      <div class="relative w-full max-w-56 sm:w-56">
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchInput($event)"
+          placeholder="Search a symbol…"
+          class="w-full rounded-md border border-line bg-panel-raised px-3 py-1.5 text-sm text-fg outline-none placeholder:text-fg-faint focus:border-brass"
+        />
+        @if (searchResults().length > 0) {
+          <div class="absolute right-0 top-full z-10 mt-1 w-72 rounded-md border border-line bg-panel-raised shadow-lg">
+            @for (result of searchResults(); track result.ticker) {
+              <button
+                type="button"
+                (click)="selectSymbol(result)"
+                class="flex w-full items-center justify-between px-3 py-2 text-left text-xs hover:bg-panel"
+              >
+                <span class="num font-medium text-fg">{{ result.ticker }}</span>
+                <span class="truncate pl-3 text-fg-muted">{{ result.name }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <p class="mt-1 text-[11px] text-fg-faint">
+      Live from the moment you opened this terminal — not historical intraday data.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div class="rounded-lg border border-line bg-panel p-2 lg:col-span-2">
+      <div #chartContainer class="h-72 w-full"></div>
+    </div>
+
+    <div class="rounded-lg border border-line bg-panel p-4">
+      @if (account(); as acc) {
+        <p class="mb-3 text-xs text-fg-muted">
+          Cash: <span class="num text-fg">{{ acc.balance | money }}</span>
+          <span class="ml-1">
+            &middot; holding <span class="num text-fg">{{ positionQuantity(symbol()) | qty }}</span> {{ symbol() }}
+          </span>
+        </p>
+      }
+
+      <div class="mb-3 grid grid-cols-2 gap-1.5">
+        <button
+          type="button"
+          (click)="setSide('BUY')"
+          class="rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+          [class]="side() === 'BUY' ? 'border-gain bg-gain/10 text-gain' : 'border-line text-fg-muted hover:border-line-strong'"
+        >
+          Buy
+        </button>
+        <button
+          type="button"
+          (click)="setSide('SELL')"
+          class="rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+          [class]="side() === 'SELL' ? 'border-loss bg-loss/10 text-loss' : 'border-line text-fg-muted hover:border-line-strong'"
+        >
+          Sell
+        </button>
+      </div>
+
+      <label for="qty" class="mb-1.5 block text-xs uppercase tracking-wide text-fg-muted">Quantity</label>
+      <input
+        id="qty"
+        type="number"
+        min="0.0001"
+        step="1"
+        [ngModel]="quantity()"
+        (ngModelChange)="quantity.set($event)"
+        class="num mb-3 w-full rounded-md border border-line bg-panel-raised px-3 py-2 text-sm text-fg outline-none focus:border-brass"
+      />
+
+      @if (orderMessage(); as msg) {
+        <p class="mb-3 rounded-md border border-line bg-panel-raised px-3 py-2 text-xs text-fg-muted">{{ msg }}</p>
+      }
+
+      <button
+        type="button"
+        (click)="submitOrder()"
+        [disabled]="disabled() || placingOrder() || !quantity()"
+        class="w-full rounded-md px-3 py-2.5 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+        [class]="side() === 'BUY' ? 'bg-gain text-ink' : 'bg-loss text-ink'"
+      >
+        {{ placingOrder() ? 'Placing…' : side() === 'BUY' ? 'Buy ' + symbol() : 'Sell ' + symbol() }}
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div class="rounded-lg border border-line bg-panel p-4">
+      <h3 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">Positions</h3>
+      @if (positions().length === 0) {
+        <p class="text-xs text-fg-faint">No open positions.</p>
+      } @else {
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-left text-fg-faint">
+              <th class="pb-2 font-normal">Symbol</th>
+              <th class="pb-2 font-normal text-right">Qty</th>
+              <th class="pb-2 font-normal text-right">Avg cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (position of positions(); track position.symbol) {
+              <tr class="border-t border-line">
+                <td class="py-1.5 font-medium text-fg">{{ position.symbol }}</td>
+                <td class="num py-1.5 text-right text-fg">{{ position.quantity | qty }}</td>
+                <td class="num py-1.5 text-right text-fg-muted">{{ position.averageCost | money }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="rounded-lg border border-line bg-panel p-4">
+      <h3 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">Recent trades</h3>
+      @if (trades().length === 0) {
+        <p class="text-xs text-fg-faint">No trades yet.</p>
+      } @else {
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-left text-fg-faint">
+              <th class="pb-2 font-normal">Side</th>
+              <th class="pb-2 font-normal">Symbol</th>
+              <th class="pb-2 font-normal text-right">Qty</th>
+              <th class="pb-2 font-normal text-right">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (trade of trades().slice(0, 8); track trade.id) {
+              <tr class="border-t border-line">
+                <td class="py-1.5" [class]="trade.side === 'BUY' ? 'text-gain' : 'text-loss'">{{ trade.side }}</td>
+                <td class="py-1.5 font-medium text-fg">{{ trade.symbol }}</td>
+                <td class="num py-1.5 text-right text-fg">{{ trade.quantity | qty }}</td>
+                <td class="num py-1.5 text-right text-fg-muted">{{ trade.price | money }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+</div>

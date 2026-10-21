@@ -1,0 +1,111 @@
+@let session = battle().session;
+
+<article class="rounded-xl border border-line bg-panel">
+  <header class="flex items-start justify-between gap-4 border-b border-line p-5">
+    <div class="min-w-0">
+      <div class="mb-1.5 flex items-center gap-2">
+        <span class="text-[11px] font-medium uppercase tracking-wider text-brass">
+          {{ intervalLabels[session.interval] }} battle
+        </span>
+        <app-status-badge [status]="session.status" />
+      </div>
+      <button
+        type="button"
+        (click)="open.emit(battle())"
+        class="block truncate text-left font-display text-2xl text-fg transition-colors hover:text-brass"
+      >
+        {{ session.name }}
+      </button>
+      <p class="mt-1 text-xs text-fg-muted">
+        {{ session.startingBalance | money }} each &middot; {{ session.participantCount }}/{{ session.maxParticipants }}
+        traders &middot; hosted by &#64;{{ session.creatorUsername }}
+      </p>
+    </div>
+
+    <div class="hidden w-48 shrink-0 sm:block">
+      <app-countdown-bar
+        [status]="session.status"
+        [startAt]="session.startedAt"
+        [endAt]="session.endAt"
+        [requestedStartAt]="session.requestedStartAt"
+      />
+    </div>
+  </header>
+
+  <div class="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,320px)_1fr]">
+    <!-- Standings -->
+    <div class="border-b border-line p-5 lg:border-b-0 lg:border-r">
+      @if (session.participants.length === 0) {
+        <p class="py-8 text-center text-xs text-fg-faint">
+          @if (session.status === 'PENDING') {
+            Waiting on traders — standings begin when the battle does.
+          } @else {
+            Standings are briefly unavailable.
+          }
+        </p>
+      } @else {
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-left text-fg-faint">
+              <th class="pb-2 font-normal">Trader</th>
+              <th class="pb-2 text-right font-normal">P&amp;L</th>
+              <th class="pb-2 text-right font-normal">Return</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of session.participants; track p.username) {
+              <tr class="border-t border-line">
+                <td class="py-2">
+                  <div class="flex items-center gap-2">
+                    <span class="h-2 w-2 shrink-0 rounded-full" [style.background]="colorFor(p.username)"></span>
+                    <span class="truncate text-fg">{{ p.displayName }}</span>
+                    <span class="num shrink-0 text-[10px] text-fg-faint">Lv{{ p.level }}</span>
+                  </div>
+                </td>
+                <td class="py-2 text-right">
+                  <app-yield-value [value]="p.pnlAmount" suffix="" [digits]="0" />
+                </td>
+                <td class="py-2 text-right">
+                  <app-yield-value [value]="p.pnlPct" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <div class="mt-4 flex gap-2">
+        @if (canJoin()) {
+          <button
+            type="button"
+            (click)="join.emit(battle())"
+            [disabled]="joinPending()"
+            class="flex-1 rounded-md bg-brass px-3 py-2 text-xs font-medium text-brass-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+          >
+            {{ joinPending() ? 'Joining…' : 'Join battle' }}
+          </button>
+        }
+        <button
+          type="button"
+          (click)="open.emit(battle())"
+          class="flex-1 rounded-md border border-line px-3 py-2 text-xs text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
+        >
+          {{ canJoin() ? 'Details' : 'Watch live' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="p-5">
+      @if (hasChart()) {
+        <app-battle-chart [timeline]="battle().timeline" [series]="battle().series" [height]="240" />
+      } @else {
+        <div class="flex h-[240px] items-center justify-center rounded-lg border border-dashed border-line">
+          <p class="px-6 text-center text-xs text-fg-faint">
+            The chart appears once this battle has a few minutes of history.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+</article>

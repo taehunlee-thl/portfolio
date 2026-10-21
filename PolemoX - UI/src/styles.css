@@ -1,0 +1,190 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/*
+ * PolemoX design tokens.
+ *
+ * The palette is deliberately not the two fintech defaults (near-black + acid-green, or
+ * near-black + electric-blue): the accent is a muted antique brass — closer to the fittings on a
+ * ticker-tape machine or the gilt numerals in a ledger than to a startup's brand blue. It's used
+ * sparingly (primary actions, active state, the session countdown rule), never as a wash.
+ *
+ * Type is a three-way split: a restrained serif for the handful of places that need real
+ * presence (marketing/auth headlines, the "you won" moment), IBM Plex Sans for every other piece
+ * of UI text, and IBM Plex Mono — tabular figures — for every single number: prices, quantities,
+ * yields, XP, timestamps. That last rule is load-bearing for the "trading terminal" read; don't
+ * let a stray number render in the sans face.
+ */
+@theme {
+  --color-ink: #0b0d10;
+  --color-panel: #14171b;
+  --color-panel-raised: #1b2026;
+  --color-line: #262b31;
+  --color-line-strong: #363c44;
+  --color-fg: #e9ebee;
+  --color-fg-muted: #868d97;
+  --color-fg-faint: #565c65;
+  --color-brass: #c6a356;
+  --color-brass-dim: #8a7439;
+  --color-brass-ink: #1f1a10;
+  --color-gain: #35c47c;
+  --color-gain-dim: #1f4c37;
+  --color-loss: #e2554f;
+  --color-loss-dim: #4c2422;
+
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* Every numeric value in the app — prices, quantities, %, XP, timestamps — wears this. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+::selection {
+  background: var(--color-brass-dim);
+  color: var(--color-ink);
+}
+
+/*
+ * Motion. A trading screen should feel alive, but the movement has to mean something — every
+ * animation here marks a real event (a fill landed, a number changed, data is loading) rather
+ * than decorating an idle page. All of it is disabled under prefers-reduced-motion below.
+ */
+
+/* A row that just arrived on the trade tape. */
+@keyframes flash-in {
+  0% {
+    background-color: color-mix(in srgb, var(--color-brass) 18%, transparent);
+    transform: translateY(-2px);
+  }
+  100% {
+    background-color: transparent;
+    transform: translateY(0);
+  }
+}
+
+.animate-flash {
+  animation: flash-in 1.5s ease-out;
+}
+
+/* A value that changed since the last poll. */
+@keyframes value-tick {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 0.45;
+  }
+}
+
+.animate-tick {
+  animation: value-tick 0.6s ease-in-out;
+}
+
+/* Slow drift behind hero panels, so large empty areas aren't dead flat. */
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-1.5%, 1.5%, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-drift {
+  animation: drift 24s ease-in-out infinite;
+}
+
+/* Ticker-tape marquee. Duplicated content inside makes the loop seamless. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+}
+
+/* Thin, unobtrusive scrollbars that still fit a dark data-dense UI (WebKit + Firefox). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* The looping ambient ones have no informational value, so drop them entirely rather than
+     running them at 0.01ms, which would leave the marquee stuck mid-translate. */
+  .animate-marquee,
+  .animate-drift {
+    animation: none !important;
+    transform: none !important;
+  }
+}

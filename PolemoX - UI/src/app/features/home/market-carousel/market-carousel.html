@@ -1,0 +1,85 @@
+<div class="relative">
+  <div class="mb-4 flex items-end justify-between gap-4">
+    <div>
+      <h2 class="font-display text-xl text-fg sm:text-2xl">Market pulse</h2>
+      <p class="mt-1 text-xs text-fg-muted">
+        US equities the arena trades most.
+        @if (hasSynthetic()) {
+          <span class="text-fg-faint">Intraday shape is indicative; the price is live.</span>
+        }
+      </p>
+    </div>
+
+    <div class="hidden shrink-0 gap-1.5 sm:flex">
+      <button
+        type="button"
+        (click)="scroll(-1)"
+        [disabled]="atStart()"
+        aria-label="Scroll market strip left"
+        class="rounded-md border border-line p-2 text-fg-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-30 disabled:hover:border-line"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        (click)="scroll(1)"
+        [disabled]="atEnd()"
+        aria-label="Scroll market strip right"
+        class="rounded-md border border-line p-2 text-fg-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-30 disabled:hover:border-line"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  @if (pulse(); as pulse) {
+    @if (pulse.degraded && symbols().length === 0) {
+      <div class="rounded-lg border border-dashed border-line px-6 py-10 text-center text-sm text-fg-muted">
+        Market data is unavailable right now.
+      </div>
+    } @else {
+      <div
+        #track
+        (scroll)="onScroll()"
+        class="flex snap-x snap-proximity gap-3 overflow-x-auto scroll-smooth pb-2"
+      >
+        @for (symbol of symbols(); track symbol.symbol) {
+          <article
+            class="w-60 shrink-0 snap-start rounded-lg border border-line bg-panel p-4 transition-colors hover:border-line-strong"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="flex min-w-0 items-center gap-2">
+                <app-symbol-logo [symbol]="symbol.symbol" [logoUrl]="symbol.logoUrl" [size]="24" />
+                <span class="min-w-0">
+                  <span class="num block text-sm font-medium tracking-wide text-fg">{{ symbol.symbol }}</span>
+                  @if (symbol.companyName) {
+                    <span class="block truncate text-[10px] text-fg-faint">{{ symbol.companyName }}</span>
+                  }
+                </span>
+              </span>
+              <app-yield-value [value]="symbol.changePct" />
+            </div>
+            <div class="num mt-1.5 text-lg text-fg">{{ symbol.price | money }}</div>
+            <div class="mt-3">
+              <app-spark-chart [data]="symbol.sparkline" [trend]="trendOf(symbol)" [height]="72" />
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (pulse.degraded) {
+        <p class="mt-2 text-[11px] text-fg-faint">Some symbols couldn't be loaded from the data provider.</p>
+      }
+    }
+  } @else {
+    <div class="flex gap-3 overflow-hidden pb-2">
+      @for (placeholder of [1, 2, 3, 4, 5]; track placeholder) {
+        <div class="h-40 w-60 shrink-0 animate-pulse rounded-lg border border-line bg-panel"></div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,55 @@
+@if (auth.currentUser(); as user) {
+  <div class="mb-8 rounded-lg border border-line bg-panel p-6">
+    <div class="flex items-center gap-5">
+      <app-level-badge [level]="user.level" [xpTotal]="user.xpTotal" [size]="72" />
+      <div>
+        <h1 class="font-display text-2xl text-fg">{{ user.displayName }}</h1>
+        <p class="text-sm text-fg-muted">&#64;{{ user.username }}</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <div class="rounded-md bg-panel-raised p-3">
+        <div class="num text-lg text-fg">{{ user.xpTotal }}</div>
+        <div class="text-[11px] uppercase tracking-wide text-fg-muted">Total XP</div>
+      </div>
+      <div class="rounded-md bg-panel-raised p-3">
+        <div class="num text-lg text-fg">{{ nextLevelXp() }}</div>
+        <div class="text-[11px] uppercase tracking-wide text-fg-muted">XP for level {{ user.level + 1 }}</div>
+      </div>
+      <div class="rounded-md bg-panel-raised p-3">
+        <div class="num text-lg text-fg">{{ battlesPlayed() }}</div>
+        <div class="text-[11px] uppercase tracking-wide text-fg-muted">Battles completed</div>
+      </div>
+    </div>
+  </div>
+}
+
+<section>
+  <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">Battle history</h2>
+
+  @if (loading()) {
+    <p class="text-sm text-fg-muted">Loading…</p>
+  } @else if (completedSessions().length === 0) {
+    <div class="rounded-lg border border-dashed border-line p-10 text-center text-sm text-fg-muted">
+      No completed battles yet — finish one to start earning XP.
+    </div>
+  } @else {
+    <div class="space-y-2">
+      @for (session of completedSessions(); track session.id) {
+        <a
+          [routerLink]="['/sessions', session.id]"
+          class="flex items-center justify-between gap-3 rounded-lg border border-line bg-panel p-4 transition-colors hover:border-line-strong"
+        >
+          <div>
+            <div class="text-sm text-fg">{{ session.name }}</div>
+            <div class="text-[11px] text-fg-faint">
+              {{ session.participantCount }} players &middot; ended {{ session.endAt | date: 'medium' }}
+            </div>
+          </div>
+          <app-status-badge [status]="session.status" />
+        </a>
+      }
+    </div>
+  }
+</section>

@@ -1,0 +1,90 @@
+<div class="rounded-lg border border-line bg-panel">
+  <div class="border-b border-line p-4">
+    <div class="flex flex-wrap items-center gap-1.5">
+      @for (category of categories; track category.id) {
+        <button
+          type="button"
+          (click)="select(category.id)"
+          class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+          [class]="
+            selected() === category.id
+              ? 'bg-brass/15 text-brass'
+              : 'text-fg-muted hover:bg-panel-raised hover:text-fg'
+          "
+        >
+          {{ category.label }}
+        </button>
+      }
+    </div>
+    <p class="mt-2 text-[11px] text-fg-faint">{{ activeMeta().blurb }}</p>
+  </div>
+
+  @if (loading()) {
+    <div class="space-y-2 p-4">
+      @for (placeholder of [1, 2, 3, 4, 5]; track placeholder) {
+        <div class="h-10 animate-pulse rounded-md bg-panel-raised"></div>
+      }
+    </div>
+  } @else if (failed()) {
+    <p class="px-4 py-10 text-center text-sm text-fg-muted">Rankings are unavailable right now.</p>
+  } @else if (board(); as board) {
+    @if (board.entries.length === 0) {
+      <p class="px-4 py-10 text-center text-sm text-fg-muted">
+        No one qualifies for this board yet.
+        @if (selected() === 'WIN_RATE') {
+          <span class="block text-xs text-fg-faint">
+            Needs at least {{ board.minBattlesForRateCategories }} completed battles.
+          </span>
+        }
+      </p>
+    } @else {
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-line text-left text-[11px] uppercase tracking-wider text-fg-faint">
+            <th class="px-4 py-2 font-normal">Rank</th>
+            <th class="px-4 py-2 font-normal">Trader</th>
+            <th class="px-4 py-2 text-right font-normal">{{ activeMeta().label }}</th>
+            <th class="hidden px-4 py-2 text-right font-normal sm:table-cell">Battles</th>
+            <th class="hidden px-4 py-2 text-right font-normal sm:table-cell">Wins</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of board.entries; track entry.user.id) {
+            <tr class="border-b border-line/60 last:border-0" [class.bg-brass]="false">
+              <td class="px-4 py-2.5">
+                <span
+                  class="num text-sm"
+                  [class]="entry.rank === 1 ? 'text-brass' : entry.rank <= 3 ? 'text-fg' : 'text-fg-faint'"
+                >
+                  {{ entry.rank }}
+                </span>
+              </td>
+              <td class="px-4 py-2.5">
+                <div class="flex items-center gap-2.5">
+                  <app-level-badge [level]="entry.level" [xpTotal]="entry.xpTotal" [size]="26" />
+                  <div class="min-w-0">
+                    <div class="truncate text-sm text-fg">{{ entry.user.displayName }}</div>
+                    <div class="truncate text-[11px] text-fg-faint">&#64;{{ entry.user.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-2.5 text-right">
+                @if (isPercentCategory()) {
+                  <app-yield-value [value]="entry.score" />
+                } @else {
+                  <span class="num text-sm text-fg">{{ scoreLabel(entry) }}</span>
+                }
+              </td>
+              <td class="num hidden px-4 py-2.5 text-right text-sm text-fg-muted sm:table-cell">
+                {{ entry.battlesPlayed }}
+              </td>
+              <td class="num hidden px-4 py-2.5 text-right text-sm text-fg-muted sm:table-cell">
+                {{ entry.wins }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</div>

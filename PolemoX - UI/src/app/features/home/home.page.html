@@ -1,0 +1,141 @@
+<app-ticker-tape [symbols]="pulseSymbols()" />
+
+<!-- Category strip, pinned under the top bar like a market-category nav. -->
+<div class="sticky top-14 z-30 border-b border-line bg-ink/95 backdrop-blur">
+  <div class="mx-auto max-w-[1440px] px-4 sm:px-6">
+    <div class="flex gap-1 overflow-x-auto py-2">
+      @for (cat of categories; track cat.id) {
+        <button
+          type="button"
+          (click)="select(cat.id)"
+          class="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+          [class]="
+            category() === cat.id
+              ? 'bg-panel-raised text-fg'
+              : 'text-fg-muted hover:bg-panel hover:text-fg'
+          "
+        >
+          {{ cat.label }}
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="mx-auto max-w-[1440px] px-4 pb-16 pt-4 sm:px-6">
+  <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
+    <!-- Main column -->
+    <main class="min-w-0 flex-1">
+      @if (errorMessage(); as msg) {
+        <p class="mb-4 rounded-md border border-loss/30 bg-loss/10 px-3 py-2 text-xs text-loss">{{ msg }}</p>
+      }
+
+      <!-- Hero: the battle most worth watching right now -->
+      @if (hero(); as hero) {
+        <section class="mb-6">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h1 class="font-display text-lg text-fg">Featured battle</h1>
+            @if ((featured()?.length ?? 0) > 1) {
+              <div class="flex items-center gap-2">
+                <span class="num text-[11px] text-fg-faint">
+                  {{ heroIndex() + 1 }} of {{ featured()?.length }}
+                </span>
+                <button
+                  type="button"
+                  (click)="cycleHero(-1)"
+                  aria-label="Previous featured battle"
+                  class="rounded-md border border-line p-1.5 text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  (click)="cycleHero(1)"
+                  aria-label="Next featured battle"
+                  class="rounded-md border border-line p-1.5 text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          <app-battle-hero
+            [battle]="hero"
+            [joinPending]="joinPending() === hero.session.id"
+            (join)="onJoin($event.session)"
+            (open)="onOpen($event.session)"
+          />
+        </section>
+      } @else if (featured() === null) {
+        <div class="mb-6 h-80 animate-pulse rounded-xl border border-line bg-panel"></div>
+      }
+
+      <!-- What this is, for anyone arriving cold -->
+      @if (!auth.isAuthenticated()) {
+        <section class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <span class="num text-[11px] text-brass">01</span>
+            <h3 class="mt-1.5 text-sm text-fg">Same money, same market</h3>
+            <p class="mt-1 text-[11px] leading-relaxed text-fg-muted">
+              Every trader in a battle starts with an identical mock balance and live US equity prices.
+            </p>
+          </div>
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <span class="num text-[11px] text-brass">02</span>
+            <h3 class="mt-1.5 text-sm text-fg">Trade the clock down</h3>
+            <p class="mt-1 text-[11px] leading-relaxed text-fg-muted">
+              Battles run from one hour to thirty days. Standings update as orders fill.
+            </p>
+          </div>
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <span class="num text-[11px] text-brass">03</span>
+            <h3 class="mt-1.5 text-sm text-fg">Settle and rank</h3>
+            <p class="mt-1 text-[11px] leading-relaxed text-fg-muted">
+              Highest return takes the XP. No deposits, no risk, no house edge.
+            </p>
+          </div>
+        </section>
+      }
+
+      <!-- The board -->
+      <section>
+        <div class="mb-3 flex items-baseline justify-between gap-3">
+          <h2 class="font-display text-lg text-fg">
+            @switch (category()) {
+              @case ('live') { Live now }
+              @case ('open') { Open seats }
+              @case ('trending') { All public battles }
+              @default { {{ category() }} battles }
+            }
+          </h2>
+          @if (stats(); as stats) {
+            <span class="num text-[11px] text-fg-faint">
+              {{ stats.liveBattles }} live &middot; {{ stats.completedBattles }} settled &middot;
+              {{ stats.traders }} traders
+            </span>
+          }
+        </div>
+
+        <app-live-battles
+          [sessions]="filtered()"
+          [joinPending]="joinPending()"
+          [leavePending]="leavePending()"
+          [joinedSessionIds]="joinedSessionIds()"
+          (join)="onJoin($event)"
+          (leave)="onLeave($event)"
+          (open)="onOpen($event)"
+        />
+      </section>
+    </main>
+
+    <!-- Right rail: fixed width on desktop, stacked underneath on narrow screens -->
+    <aside class="w-full shrink-0 xl:w-[340px]">
+      <app-right-rail />
+    </aside>
+  </div>
+</div>

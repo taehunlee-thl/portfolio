@@ -1,0 +1,61 @@
+<section class="rounded-lg border border-line bg-panel">
+  <header class="flex items-center justify-between border-b border-line px-4 py-2.5">
+    <div class="flex items-center gap-2">
+      <h3 class="text-xs font-medium uppercase tracking-wider text-fg-muted">Trade tape</h3>
+      @if (live()) {
+        <span class="flex items-center gap-1">
+          <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-gain"></span>
+          <span class="text-[10px] uppercase tracking-wide text-gain">Live</span>
+        </span>
+      }
+    </div>
+    <span class="num text-[10px] text-fg-faint">{{ trades()?.length ?? 0 }} fills</span>
+  </header>
+
+  @if (trades() === null) {
+    <div class="space-y-2 p-4">
+      @for (p of [1, 2, 3, 4]; track p) {
+        <div class="h-8 animate-pulse rounded bg-panel-raised"></div>
+      }
+    </div>
+  } @else if (failed()) {
+    <p class="px-4 py-8 text-center text-xs text-fg-faint">The tape is unavailable right now.</p>
+  } @else if (isEmpty()) {
+    <p class="px-4 py-8 text-center text-xs text-fg-faint">
+      No trades yet — the tape fills as traders place orders.
+    </p>
+  } @else {
+    <ul class="max-h-[420px] overflow-y-auto">
+      @for (trade of trades(); track trade.id) {
+        <li
+          class="flex items-center gap-3 border-b border-line/60 px-4 py-2.5 last:border-0"
+          [class.animate-flash]="isNew(trade)"
+        >
+          <span
+            class="w-9 shrink-0 rounded px-1 py-0.5 text-center text-[10px] font-medium uppercase"
+            [class]="trade.side === 'BUY' ? 'bg-gain/15 text-gain' : 'bg-loss/15 text-loss'"
+          >
+            {{ trade.side }}
+          </span>
+
+          <app-symbol-logo [symbol]="trade.symbol" [logoUrl]="trade.logoUrl" [size]="24" />
+
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-1.5">
+              <span class="num text-xs font-medium text-fg">{{ trade.symbol }}</span>
+              <span class="truncate text-[11px] text-fg-faint">{{ trade.displayName }}</span>
+            </div>
+            <div class="num text-[10px] text-fg-faint">
+              {{ trade.quantity | qty }} &#64; {{ trade.price | money }}
+            </div>
+          </div>
+
+          <div class="shrink-0 text-right">
+            <div class="num text-xs text-fg">{{ trade.totalAmount | money }}</div>
+            <div class="num text-[10px] text-fg-faint">{{ trade.executedAt | date: 'HH:mm:ss' }}</div>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

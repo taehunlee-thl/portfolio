@@ -1,0 +1,45 @@
+<div class="mx-auto max-w-[1440px] px-4 pb-16 pt-6 sm:px-6">
+  <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
+    <main class="min-w-0 flex-1">
+      <app-market-carousel [pulse]="pulse()" />
+
+      @if (pulse(); as pulse) {
+        <section class="mt-8">
+          <h2 class="mb-3 font-display text-lg text-fg">All symbols</h2>
+          <div class="overflow-hidden rounded-lg border border-line bg-panel">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-line text-left text-[11px] uppercase tracking-wider text-fg-faint">
+                  <th class="px-4 py-2 font-normal">Symbol</th>
+                  <th class="px-4 py-2 text-right font-normal">Price</th>
+                  <th class="px-4 py-2 text-right font-normal">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (symbol of pulse.symbols; track symbol.symbol) {
+                  <tr class="border-b border-line/60 last:border-0">
+                    <td class="num px-4 py-2.5 text-sm font-medium text-fg">{{ symbol.symbol }}</td>
+                    <td class="num px-4 py-2.5 text-right text-sm text-fg">{{ symbol.price.toFixed(2) }}</td>
+                    <td
+                      class="num px-4 py-2.5 text-right text-sm"
+                      [class]="symbol.changePct > 0 ? 'text-gain' : symbol.changePct < 0 ? 'text-loss' : 'text-fg-muted'"
+                    >
+                      {{ symbol.changePct > 0 ? '+' : '' }}{{ symbol.changePct.toFixed(2) }}%
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-[11px] text-fg-faint">
+            Prices are live. The intraday shape on each card is indicative, not historical data.
+          </p>
+        </section>
+      }
+    </main>
+
+    <aside class="w-full shrink-0 xl:w-[340px]">
+      <app-right-rail />
+    </aside>
+  </div>
+</div>

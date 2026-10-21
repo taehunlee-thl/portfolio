@@ -1,0 +1,17 @@
+<div class="mx-auto max-w-[1440px] px-4 pb-16 pt-6 sm:px-6">
+  <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
+    <main class="min-w-0 flex-1">
+      <div class="mb-4">
+        <h1 class="font-display text-2xl text-fg">Standings</h1>
+        <p class="mt-1 text-sm text-fg-muted">
+          Ranked on settled battles only — open positions don't count until the clock stops.
+        </p>
+      </div>
+      <app-rankings-board [limit]="25" />
+    </main>
+
+    <aside class="w-full shrink-0 xl:w-[340px]">
+      <app-right-rail />
+    </aside>
+  </div>
+</div>

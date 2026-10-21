@@ -1,0 +1,49 @@
+<div class="mx-auto max-w-[1440px] px-4 pb-16 pt-6 sm:px-6">
+  <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
+    <main class="min-w-0 flex-1">
+      <div class="mb-4">
+        <h1 class="font-display text-2xl text-fg">Explore battles</h1>
+        <p class="mt-1 text-sm text-fg-muted">Open tables you can join, and running contests to follow.</p>
+      </div>
+
+      <div class="mb-5 flex gap-1.5 border-b border-line">
+        @for (option of [
+          { id: 'all', label: 'All' },
+          { id: 'live', label: 'Live now' },
+          { id: 'open', label: 'Open seats' }
+        ]; track option.id) {
+          <button
+            type="button"
+            (click)="select($any(option.id))"
+            class="-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors"
+            [class]="
+              filter() === option.id
+                ? 'border-brass text-fg'
+                : 'border-transparent text-fg-muted hover:text-fg'
+            "
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+
+      @if (errorMessage(); as msg) {
+        <p class="mb-4 rounded-md border border-loss/30 bg-loss/10 px-3 py-2 text-xs text-loss">{{ msg }}</p>
+      }
+
+      <app-live-battles
+        [sessions]="filtered()"
+        [joinPending]="joinPending()"
+        [leavePending]="leavePending()"
+        [joinedSessionIds]="joinedSessionIds()"
+        (join)="onJoin($event)"
+        (leave)="onLeave($event)"
+        (open)="onOpen($event)"
+      />
+    </main>
+
+    <aside class="w-full shrink-0 xl:w-[340px]">
+      <app-right-rail />
+    </aside>
+  </div>
+</div>

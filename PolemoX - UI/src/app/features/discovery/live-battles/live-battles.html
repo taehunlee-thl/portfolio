@@ -1,0 +1,201 @@
+@if (sessions(); as sessions) {
+  @if (sessions.length === 0) {
+    <div class="rounded-lg border border-dashed border-line px-6 py-12 text-center">
+      <p class="text-sm text-fg-muted">No battles here right now.</p>
+      <p class="mt-1 text-xs text-fg-faint">Start one and it'll show up for everyone.</p>
+    </div>
+  } @else {
+    <div class="space-y-2">
+      @for (session of sessions; track session.id) {
+        <article class="overflow-hidden rounded-lg border border-line bg-panel transition-colors hover:border-line-strong">
+          <!-- Collapsed summary -->
+          <div class="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
+            <div class="min-w-0 flex-1">
+              <div class="mb-2 flex flex-wrap items-center gap-2">
+                <app-status-badge [status]="session.status" />
+                <button
+                  type="button"
+                  (click)="open.emit(session)"
+                  class="truncate text-left text-sm font-medium text-fg transition-colors hover:text-brass"
+                >
+                  {{ session.name }}
+                </button>
+              </div>
+
+              <!-- Tags: the facts that decide whether you care -->
+              <div class="flex flex-wrap items-center gap-1.5">
+                <app-tag tone="brass" label="Stake" [numeric]="true">
+                  {{ session.startingBalance | money }}
+                </app-tag>
+                <app-tag [tone]="vacancy(session) > 0 ? 'gain' : 'neutral'" label="Seats" [numeric]="true">
+                  {{ session.participantCount }}/{{ session.maxParticipants }}
+                </app-tag>
+                <app-tag label="Runs">{{ intervalLabels[session.interval] }}</app-tag>
+                <app-tag tone="info" label="Market">{{ session.market }}</app-tag>
+                <app-tag label="Host">&#64;{{ session.creatorUsername }}</app-tag>
+
+                @if (session.symbols.length > 0) {
+                  <span class="ml-1 flex items-center gap-1">
+                    @for (symbol of visibleSymbols(session); track symbol.symbol) {
+                      <app-symbol-logo [symbol]="symbol.symbol" [logoUrl]="symbol.logoUrl" [size]="20" />
+                    }
+                    @if (hiddenSymbolCount(session) > 0) {
+                      <span class="num text-[10px] text-fg-faint">+{{ hiddenSymbolCount(session) }}</span>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Leader + clock + actions -->
+            <div class="flex shrink-0 items-center gap-4">
+              @if (leader(session); as leader) {
+                <div class="hidden text-right sm:block">
+                  <div class="truncate text-[11px] text-fg-faint">Leading</div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="truncate text-xs text-fg">{{ leader.displayName }}</span>
+                    <app-yield-value [value]="leader.pnlPct" />
+                  </div>
+                </div>
+              }
+
+              <div class="hidden w-32 shrink-0 xl:block">
+                <app-countdown-bar
+                  [status]="session.status"
+                  [startAt]="session.startedAt"
+                  [endAt]="session.endAt"
+                  [requestedStartAt]="session.requestedStartAt"
+                />
+              </div>
+
+              <div class="flex shrink-0 items-center gap-1.5">
+                @if (canJoin(session)) {
+                  <button
+                    type="button"
+                    (click)="join.emit(session)"
+                    [disabled]="joinPending() === session.id"
+                    class="rounded-md bg-brass px-3 py-1.5 text-xs font-medium text-brass-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+                  >
+                    {{ joinPending() === session.id ? 'Joining…' : 'Join' }}
+                  </button>
+                } @else if (isJoined(session)) {
+                  <button
+                    type="button"
+                    (click)="leave.emit(session)"
+                    [disabled]="leavePending() === session.id"
+                    class="rounded-md border border-line px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-loss/40 hover:text-loss disabled:opacity-40"
+                  >
+                    {{ leavePending() === session.id ? 'Leaving…' : 'Leave' }}
+                  </button>
+                } @else if (session.status === 'PENDING') {
+                  <app-tag>Full</app-tag>
+                }
+
+                <button
+                  type="button"
+                  (click)="toggle(session.id)"
+                  [attr.aria-expanded]="isExpanded(session.id)"
+                  [attr.aria-label]="isExpanded(session.id) ? 'Hide standings' : 'Show standings'"
+                  class="rounded-md border border-line p-1.5 text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    class="transition-transform duration-200"
+                    [class.rotate-180]="isExpanded(session.id)"
+                  >
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expanded detail -->
+          @if (isExpanded(session.id)) {
+            <div class="border-t border-line bg-panel-raised/40 p-4">
+              <div class="mb-3 xl:hidden">
+                <app-countdown-bar
+                  [status]="session.status"
+                  [startAt]="session.startedAt"
+                  [endAt]="session.endAt"
+                  [requestedStartAt]="session.requestedStartAt"
+                />
+              </div>
+
+              @if (session.participants.length === 0) {
+                <p class="py-4 text-center text-xs text-fg-faint">
+                  @if (session.status === 'PENDING') {
+                    Waiting on traders — standings begin when the battle does.
+                  } @else {
+                    Standings are briefly unavailable.
+                  }
+                </p>
+              } @else {
+                <table class="w-full text-xs">
+                  <thead>
+                    <tr class="text-left text-fg-faint">
+                      <th class="pb-2 font-normal">#</th>
+                      <th class="pb-2 font-normal">Trader</th>
+                      <th class="pb-2 text-right font-normal">Equity</th>
+                      <th class="pb-2 text-right font-normal">P&amp;L</th>
+                      <th class="pb-2 text-right font-normal">Return</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (p of session.participants; track p.username) {
+                      <tr class="border-t border-line">
+                        <td class="num py-1.5" [class]="p.rank === 1 ? 'text-brass' : 'text-fg-faint'">{{ p.rank }}</td>
+                        <td class="py-1.5">
+                          <span class="text-fg">{{ p.displayName }}</span>
+                          <span class="num ml-1.5 text-[10px] text-fg-faint">Lv{{ p.level }}</span>
+                        </td>
+                        <td class="num py-1.5 text-right text-fg-muted">{{ p.equity | money }}</td>
+                        <td class="py-1.5 text-right">
+                          <app-yield-value [value]="p.pnlAmount" suffix="" [digits]="0" />
+                        </td>
+                        <td class="py-1.5 text-right">
+                          <app-yield-value [value]="p.pnlPct" />
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+
+              @if (session.symbols.length > 0) {
+                <div class="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
+                  <span class="text-[10px] uppercase tracking-wider text-fg-faint">In play</span>
+                  @for (symbol of session.symbols; track symbol.symbol) {
+                    <span class="inline-flex items-center gap-1 rounded-md border border-line bg-panel px-1.5 py-0.5">
+                      <app-symbol-logo [symbol]="symbol.symbol" [logoUrl]="symbol.logoUrl" [size]="16" />
+                      <span class="num text-[10px] text-fg-muted">{{ symbol.symbol }}</span>
+                    </span>
+                  }
+                </div>
+              }
+
+              <div class="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  (click)="open.emit(session)"
+                  class="rounded-md border border-line px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
+                >
+                  {{ session.status === 'ACTIVE' ? 'Watch live' : 'Open battle' }}
+                </button>
+              </div>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  }
+} @else {
+  <div class="space-y-2">
+    @for (placeholder of [1, 2, 3]; track placeholder) {
+      <div class="h-20 animate-pulse rounded-lg border border-line bg-panel"></div>
+    }
+  </div>
+}

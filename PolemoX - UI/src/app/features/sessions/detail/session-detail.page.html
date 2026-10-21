@@ -1,0 +1,189 @@
+@if (loading()) {
+  <p class="text-sm text-fg-muted">Loading…</p>
+} @else if (errorMessage() && !session()) {
+  <p class="rounded-md border border-loss/30 bg-loss/10 px-3 py-2 text-xs text-loss">{{ errorMessage() }}</p>
+} @else if (session(); as session) {
+  <a routerLink="/dashboard" class="mb-4 inline-block text-xs text-fg-muted hover:text-fg">&larr; Back to dashboard</a>
+
+  <div class="mb-6 flex flex-col gap-4 rounded-lg border border-line bg-panel p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <div class="mb-1 flex items-center gap-2.5">
+        <h1 class="font-display text-2xl text-fg">{{ session.name }}</h1>
+        <app-status-badge [status]="session.status" />
+      </div>
+      <p class="text-xs text-fg-muted">
+        {{ intervalLabels[session.interval] }} &middot; {{ session.startingBalance | money }} start &middot;
+        by &#64;{{ session.creatorUsername }}
+      </p>
+    </div>
+    <div class="w-full sm:w-64">
+      <app-countdown-bar
+        [status]="session.status"
+        [startAt]="session.startedAt"
+        [endAt]="session.endAt"
+        [requestedStartAt]="session.requestedStartAt"
+      />
+    </div>
+  </div>
+
+  @if (errorMessage(); as msg) {
+    <p class="mb-6 rounded-md border border-loss/30 bg-loss/10 px-3 py-2 text-xs text-loss">{{ msg }}</p>
+  }
+
+  @if (session.status === 'PENDING') {
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div class="rounded-lg border border-line bg-panel p-4 lg:col-span-2">
+        <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">
+          Players ({{ session.participants.length }} / {{ session.maxParticipants }})
+        </h2>
+        <div class="space-y-2">
+          @for (participant of session.participants; track participant.user.id) {
+            <div class="flex items-center gap-3 rounded-md bg-panel-raised px-3 py-2">
+              <app-level-badge [level]="participant.user.level" [xpTotal]="participant.user.xpTotal" [size]="28" />
+              <span class="text-sm text-fg">{{ participant.user.displayName }}</span>
+              <span class="text-xs text-fg-faint">&#64;{{ participant.user.username }}</span>
+              @if (participant.user.username === session.creatorUsername) {
+                <span class="ml-auto text-[10px] uppercase tracking-wide text-brass">Host</span>
+              }
+            </div>
+          }
+        </div>
+
+        @if (isCreator()) {
+          <div class="mt-4 flex gap-2">
+            <button
+              (click)="startNow()"
+              [disabled]="!canStartNow() || actionPending()"
+              class="rounded-md bg-brass px-3 py-2 text-xs font-medium text-brass-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              Start now
+            </button>
+            <button
+              (click)="cancelSession()"
+              [disabled]="actionPending()"
+              class="rounded-md border border-line px-3 py-2 text-xs text-fg-muted transition-colors hover:border-loss/40 hover:text-loss"
+            >
+              Cancel session
+            </button>
+          </div>
+          @if (!canStartNow()) {
+            <p class="mt-2 text-[11px] text-fg-faint">Need at least 2 players before this can start.</p>
+          }
+        }
+      </div>
+
+      <div class="space-y-4">
+        <div class="rounded-lg border border-line bg-panel p-4">
+          <h2 class="mb-2 text-xs font-medium uppercase tracking-wider text-fg-muted">Join code</h2>
+          <div class="flex items-center gap-2">
+            <span class="num flex-1 rounded-md bg-panel-raised px-3 py-2 text-sm tracking-widest text-brass">{{ session.joinCode }}</span>
+            <button
+              (click)="copyJoinCode()"
+              class="rounded-md border border-line px-2.5 py-2 text-xs text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
+            >
+              {{ copied() ? 'Copied' : 'Copy' }}
+            </button>
+          </div>
+          <p class="mt-2 text-[11px] text-fg-faint">Anyone with this code can join, up to the player cap.</p>
+        </div>
+
+        @if (isCreator()) {
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <h2 class="mb-2 text-xs font-medium uppercase tracking-wider text-fg-muted">Invite by username</h2>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [ngModel]="inviteUsername()"
+                (ngModelChange)="inviteUsername.set($event)"
+                placeholder="username"
+                class="w-full rounded-md border border-line bg-panel-raised px-3 py-2 text-sm text-fg outline-none placeholder:text-fg-faint focus:border-brass"
+              />
+              <button
+                (click)="sendInvite()"
+                [disabled]="actionPending() || !inviteUsername().trim()"
+                class="shrink-0 rounded-md bg-brass px-3 py-2 text-xs font-medium text-brass-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+              >
+                Invite
+              </button>
+            </div>
+            @if (inviteMessage(); as msg) {
+              <p class="mt-2 text-[11px] text-fg-muted">{{ msg }}</p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (session.status === 'ACTIVE') {
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-[280px_1fr]">
+      <div class="rounded-lg border border-line bg-panel p-4">
+        <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">Leaderboard</h2>
+        @if (leaderboard(); as lb) {
+          <div class="space-y-1.5">
+            @for (entry of lb.entries; track entry.user.id) {
+              <div class="flex items-center gap-2.5 rounded-md bg-panel-raised px-2.5 py-2">
+                <span class="num w-4 text-xs text-fg-faint">{{ entry.rank }}</span>
+                <app-level-badge [level]="entry.user.level" [xpTotal]="entry.user.xpTotal" [size]="22" />
+                <span class="flex-1 truncate text-xs text-fg">{{ entry.user.displayName }}</span>
+                <app-yield-value [value]="entry.yieldPct" />
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="text-xs text-fg-faint">Loading standings…</p>
+        }
+      </div>
+
+      <div class="min-w-0 space-y-4">
+        @if (myParticipant(); as me) {
+          <app-trading-terminal [accountId]="me.accountId" />
+        } @else {
+          <div class="rounded-lg border border-dashed border-line p-8 text-center text-sm text-fg-muted">
+            You're watching this battle. The tape below shows every fill as it happens.
+          </div>
+        }
+
+        <!-- The tape is the spectator view: who traded what, at what price, when. -->
+        <app-trade-tape [sessionId]="session.id" [live]="session.status === 'ACTIVE'" />
+      </div>
+    </div>
+  }
+
+  @if (session.status === 'COMPLETED') {
+    <div class="rounded-lg border border-line bg-panel p-5">
+      <h2 class="mb-4 text-xs font-medium uppercase tracking-wider text-fg-muted">Final standings</h2>
+      <div class="space-y-2">
+        @for (participant of session.participants | sortByRank; track participant.user.id) {
+          <div
+            class="flex items-center gap-3 rounded-md px-3 py-2.5"
+            [class]="participant.finalRank === 1 ? 'border border-brass/40 bg-brass/10' : 'bg-panel-raised'"
+          >
+            <span class="num w-6 text-sm" [class]="participant.finalRank === 1 ? 'text-brass' : 'text-fg-faint'">
+              {{ participant.finalRank }}
+            </span>
+            <app-level-badge [level]="participant.user.level" [xpTotal]="participant.user.xpTotal" [size]="30" />
+            <div class="flex-1">
+              <div class="text-sm text-fg">{{ participant.user.displayName }}</div>
+              <div class="text-[11px] text-fg-faint">&#64;{{ participant.user.username }}</div>
+            </div>
+            @if (participant.finalYieldPct !== null) {
+              <app-yield-value [value]="participant.finalYieldPct" />
+            }
+            @if (participant.xpAwarded !== null) {
+              <span class="num rounded-full border border-brass/30 bg-brass/10 px-2 py-0.5 text-[11px] text-brass">
+                +{{ participant.xpAwarded }} XP
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (session.status === 'CANCELLED') {
+    <div class="rounded-lg border border-dashed border-line p-10 text-center text-sm text-fg-muted">
+      This session was cancelled before it started.
+    </div>
+  }
+}

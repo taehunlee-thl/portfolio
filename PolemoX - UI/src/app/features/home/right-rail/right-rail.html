@@ -1,0 +1,219 @@
+<div class="flex flex-col gap-3">
+  <!-- Dashboard: signed-in users get their own state at the very top of the rail. -->
+  @if (auth.currentUser(); as user) {
+    <section class="relative overflow-hidden rounded-lg border border-brass/30 bg-brass/5 p-4">
+      <div
+        class="animate-drift pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brass/10 blur-2xl"
+      ></div>
+
+      <div class="relative flex items-center gap-3">
+        <app-level-badge [level]="user.level" [xpTotal]="user.xpTotal" [size]="38" />
+        <div class="min-w-0 flex-1">
+          <div class="truncate text-sm text-fg">{{ user.displayName }}</div>
+          <div class="num text-[11px] text-fg-muted">{{ user.xpTotal }} XP &middot; Level {{ user.level }}</div>
+        </div>
+      </div>
+
+      <dl class="relative mt-3 grid grid-cols-2 gap-2">
+        <div class="rounded-md bg-panel/60 px-3 py-2">
+          <dt class="text-[10px] uppercase tracking-wider text-fg-faint">In play</dt>
+          <dd class="num text-base text-fg">{{ myActive().length }}</dd>
+        </div>
+        <div class="rounded-md bg-panel/60 px-3 py-2">
+          <dt class="text-[10px] uppercase tracking-wider text-fg-faint">Battles</dt>
+          <dd class="num text-base text-fg">{{ mine()?.length ?? 0 }}</dd>
+        </div>
+      </dl>
+
+      <div class="relative mt-3 flex gap-2">
+        <a
+          routerLink="/dashboard"
+          class="flex-1 rounded-md bg-brass px-3 py-2 text-center text-xs font-medium text-brass-ink transition-opacity hover:opacity-90"
+        >
+          Dashboard
+        </a>
+        <a
+          routerLink="/sessions/new"
+          class="rounded-md border border-brass/40 px-3 py-2 text-xs text-brass transition-colors hover:bg-brass/10"
+        >
+          New
+        </a>
+      </div>
+    </section>
+  }
+
+  <!-- Order flow: what PolemoX's own traders are doing, with buy/sell pressure -->
+  <section class="rounded-lg border border-line bg-panel">
+    <header class="flex items-center justify-between border-b border-line px-4 py-2.5">
+      <h3 class="text-xs font-medium uppercase tracking-wider text-fg-muted">Trending in play</h3>
+      <span class="text-[10px] text-fg-faint">3d flow</span>
+    </header>
+    @if (flow(); as flow) {
+      @if (flow.length === 0) {
+        <p class="px-4 py-6 text-center text-xs text-fg-faint">No trades on the platform yet.</p>
+      } @else {
+        <ul>
+          @for (item of flow; track item.symbol) {
+            <li class="border-b border-line/60 px-4 py-2.5 last:border-0">
+              <div class="flex items-center gap-2.5">
+                <app-symbol-logo [symbol]="item.symbol" [logoUrl]="item.logoUrl" [size]="26" />
+                <div class="min-w-0 flex-1">
+                  <div class="num truncate text-xs font-medium text-fg">{{ item.symbol }}</div>
+                  <div class="truncate text-[10px] text-fg-faint">
+                    {{ item.industry ?? item.companyName ?? 'Equity' }}
+                  </div>
+                </div>
+                <div class="shrink-0 text-right">
+                  @if (item.price !== null) {
+                    <div class="num text-xs text-fg">{{ item.price | money }}</div>
+                  }
+                  <div class="num text-[10px] text-fg-faint">{{ item.trades }} fills</div>
+                </div>
+              </div>
+
+              <!-- Buy/sell pressure: the split is the point, so show it as a bar not a number. -->
+              <div class="mt-1.5 flex items-center gap-2">
+                <div class="flex h-1 flex-1 overflow-hidden rounded-full bg-loss/30">
+                  <div class="h-full bg-gain transition-[width] duration-500" [style.width.%]="item.buyPressurePct"></div>
+                </div>
+                <span class="num w-16 shrink-0 text-right text-[10px] text-fg-faint">
+                  {{ item.buys }}B / {{ item.sells }}S
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      <div class="space-y-2 p-4">
+        @for (p of [1, 2, 3]; track p) {
+          <div class="h-10 animate-pulse rounded bg-panel-raised"></div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Sector heat -->
+  <section class="rounded-lg border border-line bg-panel">
+    <header class="flex items-center justify-between border-b border-line px-4 py-2.5">
+      <h3 class="text-xs font-medium uppercase tracking-wider text-fg-muted">Hot sectors</h3>
+    </header>
+    @if (sectors(); as sectors) {
+      @if (sectors.length === 0) {
+        <p class="px-4 py-6 text-center text-xs text-fg-faint">Not enough activity yet.</p>
+      } @else {
+        <ul class="px-4 py-1">
+          @for (sector of sectors; track sector.sector) {
+            <li class="border-b border-line/60 py-2.5 last:border-0">
+              <div class="mb-1.5 flex items-baseline justify-between gap-2">
+                <span class="truncate text-xs text-fg">{{ sector.sector }}</span>
+                <span class="num shrink-0 text-[10px] text-fg-faint">{{ sector.trades }} fills</span>
+              </div>
+              <div class="h-1.5 overflow-hidden rounded-full bg-panel-raised">
+                <div
+                  class="h-full rounded-full bg-brass/70 transition-[width] duration-700"
+                  [style.width.%]="sectorWidth(sector)"
+                ></div>
+              </div>
+              <div class="mt-1 flex flex-wrap gap-1">
+                @for (symbol of sector.topSymbols; track symbol) {
+                  <span class="num text-[10px] text-fg-faint">{{ symbol }}</span>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      <div class="space-y-2 p-4">
+        @for (p of [1, 2]; track p) {
+          <div class="h-10 animate-pulse rounded bg-panel-raised"></div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Top traders -->
+  <section class="rounded-lg border border-line bg-panel">
+    <header class="flex items-center justify-between border-b border-line px-4 py-2.5">
+      <h3 class="text-xs font-medium uppercase tracking-wider text-fg-muted">Top traders</h3>
+      <a routerLink="/rankings" class="text-[11px] text-fg-faint transition-colors hover:text-brass">All</a>
+    </header>
+    @if (topTraders(); as board) {
+      @if (board.entries.length === 0) {
+        <p class="px-4 py-6 text-center text-xs text-fg-faint">No settled results yet.</p>
+      } @else {
+        <ul>
+          @for (entry of board.entries; track entry.user.id) {
+            <li class="border-b border-line/60 last:border-0">
+              <a
+                [routerLink]="['/traders', entry.user.username]"
+                class="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-panel-raised"
+              >
+                <span class="num w-3 text-[11px]" [class]="entry.rank === 1 ? 'text-brass' : 'text-fg-faint'">
+                  {{ entry.rank }}
+                </span>
+                <app-level-badge [level]="entry.level" [xpTotal]="entry.xpTotal" [size]="22" />
+                <div class="min-w-0 flex-1">
+                  <div class="truncate text-xs text-fg">{{ entry.user.displayName }}</div>
+                  <div class="num truncate text-[10px] text-fg-faint">
+                    {{ entry.battlesPlayed }} battles &middot; {{ entry.wins }} wins
+                  </div>
+                </div>
+                <app-yield-value [value]="entry.bestYieldPct" />
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      <div class="space-y-2 p-4">
+        @for (p of [1, 2, 3]; track p) {
+          <div class="h-8 animate-pulse rounded bg-panel-raised"></div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Happening now -->
+  <section class="rounded-lg border border-line bg-panel">
+    <header class="flex items-center justify-between border-b border-line px-4 py-2.5">
+      <h3 class="text-xs font-medium uppercase tracking-wider text-fg-muted">Happening now</h3>
+      <a routerLink="/explore" class="text-[11px] text-fg-faint transition-colors hover:text-brass">All</a>
+    </header>
+    @if (recent(); as sessions) {
+      @if (sessions.length === 0) {
+        <p class="px-4 py-6 text-center text-xs text-fg-faint">Nothing running right now.</p>
+      } @else {
+        <ul>
+          @for (session of sessions.slice(0, 4); track session.id) {
+            <li class="border-b border-line/60 last:border-0">
+              <a
+                [routerLink]="['/sessions', session.id]"
+                class="flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-panel-raised"
+              >
+                <div class="min-w-0">
+                  <div class="truncate text-xs text-fg">{{ session.name }}</div>
+                  <div class="num truncate text-[10px] text-fg-faint">
+                    {{ session.participantCount }}/{{ session.maxParticipants }} &middot; {{ session.market }}
+                  </div>
+                </div>
+                @if (session.participants.length > 0) {
+                  <app-yield-value [value]="session.participants[0].pnlPct" />
+                } @else {
+                  <span class="shrink-0 text-[10px] uppercase tracking-wide text-brass">Open</span>
+                }
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      <div class="space-y-2 p-4">
+        @for (p of [1, 2, 3]; track p) {
+          <div class="h-8 animate-pulse rounded bg-panel-raised"></div>
+        }
+      </div>
+    }
+  </section>
+</div>

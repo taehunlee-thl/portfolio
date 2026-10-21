@@ -1,0 +1,138 @@
+<div class="mx-auto max-w-[1440px] px-4 pb-16 pt-6 sm:px-6">
+  <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
+    <main class="min-w-0 flex-1">
+      <a routerLink="/rankings" class="mb-4 inline-block text-xs text-fg-muted transition-colors hover:text-fg">
+        &larr; Back to standings
+      </a>
+
+      @if (loading()) {
+        <div class="h-40 animate-pulse rounded-lg border border-line bg-panel"></div>
+      } @else if (errorMessage(); as msg) {
+        <div class="rounded-lg border border-dashed border-line px-6 py-12 text-center">
+          <p class="text-sm text-fg-muted">{{ msg }}</p>
+        </div>
+      } @else if (profile(); as profile) {
+        <!-- Identity -->
+        <section class="relative overflow-hidden rounded-lg border border-line bg-panel p-6">
+          <div class="animate-drift pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-brass/10 blur-3xl"></div>
+
+          <div class="relative flex flex-wrap items-center gap-5">
+            <app-level-badge [level]="profile.user.level" [xpTotal]="profile.user.xpTotal" [size]="64" />
+            <div class="min-w-0">
+              <h1 class="font-display text-2xl text-fg">{{ profile.user.displayName }}</h1>
+              <p class="text-sm text-fg-muted">&#64;{{ profile.user.username }}</p>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                <app-tag tone="brass" label="XP" [numeric]="true">{{ profile.user.xpTotal }}</app-tag>
+                <app-tag label="Level" [numeric]="true">{{ profile.user.level }}</app-tag>
+                @if (profile.favouriteSector) {
+                  <app-tag tone="info" label="Trades most">{{ profile.favouriteSector }}</app-tag>
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Record -->
+        <section class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <div class="text-[10px] uppercase tracking-wider text-fg-faint">Battles</div>
+            <div class="num mt-1 text-xl text-fg">{{ profile.battlesPlayed }}</div>
+          </div>
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <div class="text-[10px] uppercase tracking-wider text-fg-faint">Wins</div>
+            <div class="num mt-1 text-xl text-brass">{{ profile.wins }}</div>
+          </div>
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <div class="text-[10px] uppercase tracking-wider text-fg-faint">Win rate</div>
+            <div class="num mt-1 text-xl text-fg">{{ profile.winRatePct }}%</div>
+          </div>
+          <div class="rounded-lg border border-line bg-panel p-4">
+            <div class="text-[10px] uppercase tracking-wider text-fg-faint">Best result</div>
+            <div class="mt-1 text-xl">
+              <app-yield-value [value]="profile.bestYieldPct" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Trading habits -->
+        <section class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div class="rounded-lg border border-line bg-panel p-5">
+            <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">How they trade</h2>
+
+            @if (profile.tradesExecuted === 0) {
+              <p class="py-6 text-center text-xs text-fg-faint">No trades executed yet.</p>
+            } @else {
+              <dl class="mb-4 grid grid-cols-3 gap-3">
+                <div>
+                  <dt class="text-[10px] uppercase tracking-wider text-fg-faint">Fills</dt>
+                  <dd class="num text-base text-fg">{{ profile.tradesExecuted }}</dd>
+                </div>
+                <div>
+                  <dt class="text-[10px] uppercase tracking-wider text-fg-faint">Buys</dt>
+                  <dd class="num text-base text-gain">{{ profile.buys }}</dd>
+                </div>
+                <div>
+                  <dt class="text-[10px] uppercase tracking-wider text-fg-faint">Sells</dt>
+                  <dd class="num text-base text-loss">{{ profile.sells }}</dd>
+                </div>
+              </dl>
+
+              <div class="mb-1.5 flex items-baseline justify-between">
+                <span class="text-[10px] uppercase tracking-wider text-fg-faint">Buy pressure</span>
+                <span class="num text-[11px] text-fg-muted">{{ profile.buyPressurePct }}% buys</span>
+              </div>
+              <div class="flex h-2 overflow-hidden rounded-full bg-loss/30">
+                <div class="h-full bg-gain transition-[width] duration-700" [style.width.%]="profile.buyPressurePct"></div>
+              </div>
+
+              <div class="mt-4 border-t border-line pt-3">
+                <div class="text-[10px] uppercase tracking-wider text-fg-faint">Average result</div>
+                <div class="mt-1 text-lg">
+                  <app-yield-value [value]="profile.avgYieldPct" />
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="rounded-lg border border-line bg-panel p-5">
+            <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">What they trade</h2>
+
+            @if (profile.favouriteSymbols.length === 0) {
+              <p class="py-6 text-center text-xs text-fg-faint">Nothing traded yet.</p>
+            } @else {
+              <ul class="space-y-2.5">
+                @for (symbol of profile.favouriteSymbols; track symbol.symbol) {
+                  <li>
+                    <div class="flex items-center gap-2.5">
+                      <app-symbol-logo [symbol]="symbol.symbol" [logoUrl]="symbol.logoUrl" [size]="26" />
+                      <div class="min-w-0 flex-1">
+                        <div class="num truncate text-xs font-medium text-fg">{{ symbol.symbol }}</div>
+                        <div class="truncate text-[10px] text-fg-faint">
+                          {{ symbol.companyName ?? symbol.industry ?? 'Equity' }}
+                        </div>
+                      </div>
+                      <div class="shrink-0 text-right">
+                        <div class="num text-[11px] text-fg">{{ symbol.trades }} fills</div>
+                        <div class="num text-[10px] text-fg-faint">{{ symbol.volume | money }}</div>
+                      </div>
+                    </div>
+                    <div class="mt-1 h-1 overflow-hidden rounded-full bg-panel-raised">
+                      <div
+                        class="h-full rounded-full bg-brass/70 transition-[width] duration-700"
+                        [style.width.%]="barWidth(symbol.trades)"
+                      ></div>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </section>
+      }
+    </main>
+
+    <aside class="w-full shrink-0 xl:w-[340px]">
+      <app-right-rail />
+    </aside>
+  </div>
+</div>

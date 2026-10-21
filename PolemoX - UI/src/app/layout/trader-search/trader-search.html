@@ -1,0 +1,54 @@
+<div class="relative w-full">
+  <div class="relative">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-faint"
+    >
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8" />
+      <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
+    <input
+      #searchInput
+      type="search"
+      [ngModel]="query()"
+      (ngModelChange)="onInput($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      placeholder="Search traders"
+      aria-label="Search traders"
+      class="w-full rounded-md border border-line bg-panel-raised py-1.5 pl-9 pr-3 text-xs text-fg outline-none placeholder:text-fg-faint focus:border-brass"
+    />
+  </div>
+
+  @if (open()) {
+    <div class="absolute left-0 top-full z-50 mt-1 w-full min-w-64 overflow-hidden rounded-md border border-line bg-panel-raised shadow-xl">
+      @if (searching() && results().length === 0) {
+        <p class="px-3 py-3 text-xs text-fg-faint">Searching…</p>
+      } @else if (results().length === 0) {
+        <p class="px-3 py-3 text-xs text-fg-faint">No traders match “{{ query() }}”.</p>
+      } @else {
+        <ul>
+          @for (user of results(); track user.id) {
+            <li>
+              <button
+                type="button"
+                (click)="select(user)"
+                class="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-panel"
+              >
+                <app-level-badge [level]="user.level" [xpTotal]="user.xpTotal" [size]="24" />
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-xs text-fg">{{ user.displayName }}</span>
+                  <span class="block truncate text-[10px] text-fg-faint">&#64;{{ user.username }}</span>
+                </span>
+                <span class="num shrink-0 text-[10px] text-fg-faint">{{ user.xpTotal }} XP</span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+</div>

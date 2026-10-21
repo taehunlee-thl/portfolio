@@ -1,0 +1,119 @@
+@if (auth.currentUser(); as user) {
+  <div class="mb-8 flex flex-col gap-4 rounded-lg border border-line bg-panel p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-4">
+      <app-level-badge [level]="user.level" [xpTotal]="user.xpTotal" [size]="52" />
+      <div>
+        <h1 class="font-display text-xl text-fg">Welcome back, {{ user.displayName }}</h1>
+        <p class="num text-xs text-fg-muted">{{ user.xpTotal }} XP earned across all sessions</p>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2 sm:flex-row">
+      <div class="flex gap-1.5">
+        <input
+          type="text"
+          [ngModel]="joinCode()"
+          (ngModelChange)="joinCode.set($event)"
+          placeholder="Join code"
+          class="num w-32 rounded-md border border-line bg-panel-raised px-3 py-2 text-xs uppercase tracking-widest text-fg outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-fg-faint focus:border-brass"
+        />
+        <button
+          (click)="joinByCode()"
+          [disabled]="joining() || !joinCode().trim()"
+          class="rounded-md border border-line px-3 py-2 text-xs text-fg-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-40"
+        >
+          Join
+        </button>
+      </div>
+      <a
+        routerLink="/sessions/new"
+        class="inline-flex items-center justify-center rounded-md bg-brass px-4 py-2 text-sm font-medium text-brass-ink transition-opacity hover:opacity-90"
+      >
+        Start a new session
+      </a>
+    </div>
+  </div>
+  @if (joinError(); as msg) {
+    <p class="-mt-4 mb-6 text-xs text-loss">{{ msg }}</p>
+  }
+}
+
+@if (errorMessage(); as msg) {
+  <p class="mb-6 rounded-md border border-loss/30 bg-loss/10 px-3 py-2 text-xs text-loss">{{ msg }}</p>
+}
+
+@if (invites().length > 0) {
+  <section class="mb-8">
+    <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">Pending invites</h2>
+    <div class="space-y-2">
+      @for (invite of invites(); track invite.id) {
+        <div class="flex flex-col gap-3 rounded-lg border border-brass/30 bg-brass/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-fg">
+              <span class="font-medium">&#64;{{ invite.invitedByUsername }}</span> invited you to
+              <span class="font-medium">{{ invite.sessionName }}</span>
+            </p>
+            <p class="text-xs text-fg-muted">{{ intervalLabel(invite.sessionInterval) }} battle</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              (click)="declineInvite(invite)"
+              [disabled]="respondingTo() === invite.id"
+              class="rounded-md border border-line px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-loss/40 hover:text-loss disabled:opacity-40"
+            >
+              Decline
+            </button>
+            <button
+              (click)="acceptInvite(invite)"
+              [disabled]="respondingTo() === invite.id"
+              class="rounded-md bg-brass px-3 py-1.5 text-xs font-medium text-brass-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              Accept
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+}
+
+<section>
+  <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-fg-muted">Your sessions</h2>
+
+  @if (loading()) {
+    <p class="text-sm text-fg-muted">Loading…</p>
+  } @else if (sessions().length === 0) {
+    <div class="rounded-lg border border-dashed border-line p-10 text-center">
+      <p class="mb-3 text-sm text-fg-muted">No sessions yet — create one and invite some players.</p>
+      <a routerLink="/sessions/new" class="text-sm text-brass hover:underline">Start your first session</a>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (session of sessions(); track session.id) {
+        <a
+          [routerLink]="['/sessions', session.id]"
+          class="flex flex-col gap-4 rounded-lg border border-line bg-panel p-4 transition-colors hover:border-line-strong"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h3 class="font-display text-base text-fg">{{ session.name }}</h3>
+              <p class="text-xs text-fg-muted">{{ intervalLabel(session.interval) }} &middot; {{ session.startingBalance | money }} start</p>
+            </div>
+            <app-status-badge [status]="session.status" />
+          </div>
+
+          <app-countdown-bar
+            [status]="session.status"
+            [startAt]="session.startedAt"
+            [endAt]="session.endAt"
+            [requestedStartAt]="session.requestedStartAt"
+          />
+
+          <div class="flex items-center justify-between text-xs text-fg-muted">
+            <span>{{ session.participantCount }} / {{ session.maxParticipants }} players</span>
+            <span>by &#64;{{ session.creatorUsername }}</span>
+          </div>
+        </a>
+      }
+    </div>
+  }
+</section>
